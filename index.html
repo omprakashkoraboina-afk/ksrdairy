@@ -236,6 +236,7 @@ th{
                         <th>Fat</th>
                         <th>Rate</th>
                         <th>Amount</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -449,6 +450,12 @@ function showRecords(){
             <td>${e.fat}</td>
             <td>₹${e.rate}</td>
             <td>₹${e.amount.toFixed(2)}</td>
+            <td>
+                <button class="delete"
+                        onclick="deleteEntry(${e.serial})">
+                    🗑️ Delete
+                </button>
+            </td>
         </tr>
         `;
     });
@@ -456,6 +463,30 @@ function showRecords(){
 
     document.getElementById("recordList")
         .innerHTML=html;
+}
+
+
+function deleteEntry(serial){
+
+    if(!confirm("Ee milk entry ni delete cheyala?")){
+        return;
+    }
+
+    entries =
+        entries.filter(e => e.serial != serial);
+
+    entries.forEach((e,index) => {
+        e.serial = index + 1;
+    });
+
+    localStorage.setItem(
+        "ksrDairyEntries",
+        JSON.stringify(entries)
+    );
+
+    showRecords();
+    updateDashboard();
+    monthlyTotal();
 }
 
 
