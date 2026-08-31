@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSR Dairy</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f6f9;
+    padding-bottom:75px;
+}
+
+header{
+    background:#1565c0;
+    color:white;
+    padding:22px 16px;
+    text-align:center;
+    border-radius:0 0 22px 22px;
+}
+
+header h1{margin:0;font-size:28px}
+header p{margin:6px 0 0}
+
+.page{
+    display:none;
+    padding:18px;
+}
+
+.page.active{display:block}
+
+.card{
+    background:white;
+    padding:18px;
+    margin-bottom:15px;
+    border-radius:16px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+input,select,button{
+    width:100%;
+    padding:13px;
+    margin-top:7px;
+    margin-bottom:13px;
+    border-radius:9px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+button{
+    background:#1565c0;
+    color:white;
+    border:0;
+    font-weight:bold;
+}
+
+.amount{
+    font-size:21px;
+    font-weight:bold;
+    margin:8px 0 15px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.stat{
+    background:white;
+    padding:16px;
+    border-radius:14px;
+    text-align:center;
+}
+
+.stat b{
+    display:block;
+    font-size:20px;
+    margin-top:7px;
+}
+
+.table{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    font-size:13px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+
+th{
+    background:#e8f1fa;
+}
+
+.bottom{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:68px;
+    background:white;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    box-shadow:0 -2px 10px rgba(0,0,0,.12);
+}
+
+.nav{
+    border:0;
+    background:white;
+    color:#555;
+    margin:0;
+    padding:7px;
+    font-size:12px;
+}
+
+.nav.active{
+    color:#1565c0;
+    font-weight:bold;
+}
+
+.delete{
+    background:#d32f2f;
+    padding:7px;
+    font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🥛 KSR DAIRY</h1>
+    <p>Buffalo Milk Collection</p>
+</header>
+
+<!-- HOME -->
+<section id="home" class="page active">
+
+    <h2>🏠 Dashboard</h2>
+
+    <div class="stats">
+        <div class="stat">
+            Today's Litres
+            <b id="todayLitres">0</b>
+        </div>
+
+        <div class="stat">
+            Today's Amount
+            <b>₹<span id="todayAmount">0.00</span></b>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🌅 Morning Collection</h3>
+        <p id="morningTotal">0 Litres</p>
+    </div>
+
+    <div class="card">
+        <h3>🌆 Evening Collection</h3>
+        <p id="eveningTotal">0 Litres</p>
+    </div>
+
+</section>
+
+
+<!-- ENTRY -->
+<section id="entry" class="page">
+
+    <div class="card">
+        <h2>➕ Milk Entry</h2>
+
+        <label>Card Number</label>
+        <input id="card" type="number" placeholder="Enter card number">
+
+        <label>Date</label>
+        <input id="date" type="date">
+
+        <label>Session</label>
+        <select id="session">
+            <option>Morning</option>
+            <option>Evening</option>
+        </select>
+
+        <label>Buffalo Milk (Litres)</label>
+        <input id="litres" type="number" step="0.01">
+
+        <label>Fat</label>
+        <input id="fat" type="number" step="0.1">
+
+        <label>Rate</label>
+        <input id="rate" type="number" step="0.01"
+               oninput="calculate()">
+
+        <div class="amount">
+            Amount: ₹<span id="amount">0.00</span>
+        </div>
+
+        <button onclick="saveEntry()">💾 SAVE ENTRY</button>
+    </div>
+
+</section>
+
+
+<!-- RECORDS -->
+<section id="recordsPage" class="page">
+
+    <div class="card">
+        <h2>📋 Daily Records</h2>
+
+        <input id="search" type="number"
+               placeholder="Search Card Number"
+               oninput="showRecords()">
+
+        <div class="table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Card</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Ltr</th>
+                        <th>Fat</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recordList"></tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- MONTH -->
+<section id="monthPage" class="page">
+
+    <div class="card">
+        <h2>📊 Monthly Total</h2>
+
+        <label>Select Month</label>
+        <input id="month" type="month"
+               onchange="monthlyTotal()">
+
+        <label>Card Number</label>
+        <input id="monthCard" type="number"
+               placeholder="Enter card number"
+               oninput="monthlyTotal()">
+
+        <hr>
+
+        <h3>Total Milk</h3>
+        <h2 id="monthLitres">0.00 Litres</h2>
+
+        <h3>Average Fat</h3>
+        <h2 id="avgFat">0.00</h2>
+
+        <h3>Total Amount</h3>
+        <h2>₹<span id="monthAmount">0.00</span></h2>
+    </div>
+
+</section>
+
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom">
+
+    <button class="nav active"
+            onclick="openPage('home',this)">
+        🏠<br>Home
+    </button>
+
+    <button class="nav"
+            onclick="openPage('entry',this)">
+        ➕<br>Entry
+    </button>
+
+    <button class="nav"
+            onclick="openPage('recordsPage',this)">
+        📋<br>Records
+    </button>
+
+    <button class="nav"
+            onclick="openPage('monthPage',this)">
+        📊<br>Monthly
+    </button>
+
+</div>
+
+
+<script>
+
+let entries =
+    JSON.parse(localStorage.getItem("ksrDairyEntries")) || [];
+
+
+function openPage(page,button){
+
+    document.querySelectorAll(".page")
+        .forEach(p => p.classList.remove("active"));
+
+    document.getElementById(page)
+        .classList.add("active");
+
+    document.querySelectorAll(".nav")
+        .forEach(n => n.classList.remove("active"));
+
+    button.classList.add("active");
+
+    showRecords();
+    updateDashboard();
+    monthlyTotal();
+}
+
+
+function calculate(){
+
+    let litres =
+        Number(document.getElementById("litres").value);
+
+    let rate =
+        Number(document.getElementById("rate").value);
+
+    document.getElementById("amount").innerText =
+        (litres * rate).toFixed(2);
+}
+
+
+function saveEntry(){
+
+    let card =
+        document.getElementById("card").value;
+
+    let date =
+        document.getElementById("date").value;
+
+    let session =
+        document.getElementById("session").value;
+
+    let litres =
+        Number(document.getElementById("litres").value);
+
+    let fat =
+        Number(document.getElementById("fat").value);
+
+    let rate =
+        Number(document.getElementById("rate").value);
+
+
+    if(!card || !date || !litres || !fat || !rate){
+
+        alert("Please fill all details");
+        return;
+    }
+
+
+    let amount = litres * rate;
+
+
+    let entry = {
+
+        serial: entries.length + 1,
+
+        card: card,
+
+        date: date,
+
+        session: session,
+
+        litres: litres,
+
+        fat: fat,
+
+        rate: rate,
+
+        amount: amount
+    };
+
+
+    entries.push(entry);
+
+
+    localStorage.setItem(
+        "ksrDairyEntries",
+        JSON.stringify(entries)
+    );
+
+
+    alert("✅ KSR Dairy Entry Saved!");
+
+
+    document.getElementById("card").value="";
+    document.getElementById("litres").value="";
+    document.getElementById("fat").value="";
+    document.getElementById("rate").value="";
+
+    document.getElementById("amount").innerText="0.00";
+
+
+    updateDashboard();
+    showRecords();
+    monthlyTotal();
+}
+
+
+function showRecords(){
+
+    let search =
+        document.getElementById("search").value;
+
+    let list = entries;
+
+
+    if(search){
+
+        list = entries.filter(
+            e => e.card == search
+        );
+    }
+
+
+    let html="";
+
+
+    list.forEach(e => {
+
+        html += `
+        <tr>
+            <td>${e.serial}</td>
+            <td>${e.card}</td>
+            <td>${e.date}</td>
+            <td>${e.session}</td>
+            <td>${e.litres}</td>
+            <td>${e.fat}</td>
+            <td>₹${e.rate}</td>
+            <td>₹${e.amount.toFixed(2)}</td>
+        </tr>
+        `;
+    });
+
+
+    document.getElementById("recordList")
+        .innerHTML=html;
+}
+
+
+function updateDashboard(){
+
+    let today =
+        new Date().toISOString().split("T")[0];
+
+    let todayEntries =
+        entries.filter(e => e.date === today);
+
+
+    let litres =
+        todayEntries.reduce(
+            (sum,e) => sum + e.litres,0
+        );
+
+
+    let amount =
+        todayEntries.reduce(
+            (sum,e) => sum + e.amount,0
+        );
+
+
+    let morning =
+        todayEntries
+        .filter(e => e.session==="Morning")
+        .reduce((sum,e)=>sum+e.litres,0);
+
+
+    let evening =
+        todayEntries
+        .filter(e => e.session==="Evening")
+        .reduce((sum,e)=>sum+e.litres,0);
+
+
+    document.getElementById("todayLitres")
+        .innerText=litres.toFixed(2);
+
+    document.getElementById("todayAmount")
+        .innerText=amount.toFixed(2);
+
+    document.getElementById("morningTotal")
+        .innerText=morning.toFixed(2)+" Litres";
+
+    document.getElementById("eveningTotal")
+        .innerText=evening.toFixed(2)+" Litres";
+}
+
+
+function monthlyTotal(){
+
+    let month =
+        document.getElementById("month").value;
+
+    let card =
+        document.getElementById("monthCard").value;
+
+
+    if(!month){
+
+        let now = new Date();
+
+        month =
+            now.getFullYear()+"-"+
+            String(now.getMonth()+1).padStart(2,"0");
+
+        document.getElementById("month").value=month;
+    }
+
+
+    let list =
+        entries.filter(e =>
+            e.date.startsWith(month)
+        );
+
+
+    if(card){
+
+        list =
+            list.filter(e => e.card == card);
+    }
+
+
+    let litres =
+        list.reduce((sum,e)=>sum+e.litres,0);
+
+
+    let amount =
+        list.reduce((sum,e)=>sum+e.amount,0);
+
+
+    let fat =
+        list.length
+        ? list.reduce((sum,e)=>sum+e.fat,0)/list.length
+        : 0;
+
+
+    document.getElementById("monthLitres")
+        .innerText=litres.toFixed(2)+" Litres";
+
+    document.getElementById("avgFat")
+        .innerText=fat.toFixed(2);
+
+    document.getElementById("monthAmount")
+        .innerText=amount.toFixed(2);
+}
+
+
+document.getElementById("date").value =
+    new Date().toISOString().split("T")[0];
+
+
+updateDashboard();
+showRecords();
+monthlyTotal();
+
+</script>
+
+</body>
+</html>
